@@ -1,0 +1,25 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  "start-user": "node server-user.js",
+  "start-l1": "node server-l1-admin.js",
+  "start-l2": "node server-l2-admin.js",
+  "start-all": "npm-run-all --parallel start-user start-l1-admin start-l2-admin"
+}
+,
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.10.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.10.0",
+    "otp-generator": "^4.0.1"
+  }
+}
