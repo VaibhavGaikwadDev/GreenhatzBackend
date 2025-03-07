@@ -44,10 +44,9 @@ const ideaSchema = new mongoose.Schema(
     attachment: String,
     submittedAt: { type: Date, default: Date.now },
     status: { type: String, default: "Pending" },
-    rejectionReason: { type: String, default: "" },
+    comment: { type: String, default: "" },
     rejectedAt: { type: String, default: null }, // Stores rejection timestamp in IST
     recommendedAt: { type: String, default: null }, // Stores approval timestamp in IST
-    l2Message: { type: String, default: "" } // Add this field to store the message
   },
   { collection: "idea_submissions" }
 );
@@ -152,9 +151,9 @@ app.post("/approveIdea", async (req, res) => {
     const updatedIdea = await Idea.findByIdAndUpdate(
       ideaId,
       { 
-        status: "Approved and Recommended to L2", 
+        status: status, 
         recommendedAt: recommendedAtIST,
-        l2Message: message // Add this line to store the message
+        comment: message // Add this line to store the message
       },
       { new: true }
     );
@@ -163,6 +162,7 @@ app.post("/approveIdea", async (req, res) => {
       return res.status(404).json({ error: "Idea not found" });
     }
 
+    
     // Fetch user email and send approval email
     const user = await UserCredential.findOne({ corporateId: idea.employeeId });
     if (user?.email) {

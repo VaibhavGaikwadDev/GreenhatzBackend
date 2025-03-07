@@ -5,7 +5,7 @@ const { otpDb } = require("../config/db"); // Ensure otpDb is correctly configur
 const UserSchema = new mongoose.Schema({
   corporateId: { type: String, required: true, unique: true }, // Corporate ID
   email: { type: String, required: true, unique: true }, // Email
-  role: { type: String, enum: ["user", "admin"], required: true }, // Role
+  role: { type: String, enum: ["user", "admin","adminL1","adminL2"], required: true }, // Role
   otp: { type: String }, // One-Time Password
   otpExpiry: { type: Date }, // OTP Expiry Date
   employeeName: { type: String, default: "N/A" }, // Employee Name

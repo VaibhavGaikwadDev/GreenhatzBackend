@@ -28,7 +28,9 @@ mongoose
   .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
 // Import Models
-const { Idea, RejectedIdea } = require("./models/ideaModel");
+const { Idea } = require("./models/ideaModel");
+const { Admin } = require("./models/userModel");
+
 
 // ------------------ API Routes ------------------ //
 app.use("/", otpRoutes);
@@ -43,6 +45,33 @@ app.get("/idea/:id", async (req, res) => {
     res.json(idea);
   } catch (error) {
     res.status(500).json({ error: "Error fetching idea details" });
+  }
+});
+
+app.get('/admin_credentials/:corporateId', async (req, res) => {
+  try {
+    const { corporateId } = req.params;
+
+    // Find the admin in the database
+    const admin = await Admin.findOne({ corporateId: corporateId.toString() });
+    if (admin) {
+      // Normalize roles
+      let normalizedRole;
+      if (admin.role === "adminL1") {
+        normalizedRole = "L1";
+      } else if (admin.role === "adminL2") {
+        normalizedRole = "L2";
+      } else {
+        normalizedRole = admin.role; // Use the original role if no normalization is needed
+      }
+    
+      res.status(200).json({ role: normalizedRole });
+    } else {
+      res.status(404).json({ error: 'Admin not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching admin role:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
