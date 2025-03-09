@@ -49,26 +49,27 @@ router.post("/resend-otp", async (req, res) => {
 });
 
 // OTP Verification
+// otpRoutes.js (assumed)
 router.post("/verify-otp", async (req, res) => {
   const { corporateId, otp } = req.body;
-  try {
-    let user = await User.findOne({ corporateId, otp });
-    let collection = User;
-
-    if (!user) {
-      user = await Admin.findOne({ corporateId, otp });
-      collection = Admin;
-    }
-
-    if (!user) return res.status(400).json({ message: "Invalid OTP" });
-    if (user.otpExpiry < new Date()) return res.status(400).json({ message: "OTP expired" });
-
-    await collection.updateOne({ corporateId }, { $unset: { otp: 1, otpExpiry: 1 } });
-    res.status(200).json({ message: "Login successful", role: user.role });
-  } catch (error) {
-    console.error("Error in /verify-otp:", error);
-    res.status(500).json({ message: "Server error", error });
+  const admin = await Admin.findOne({ corporateId, otp });
+  if (!admin) {
+    return res.status(400).json({ error: "Invalid OTP" });
   }
+  if (admin.otpExpiry < Date.now()) {
+    return res.status(400).json({ error: "OTP expired" });
+  }
+
+  // Clear OTP after successful verification
+  admin.otp = undefined;
+  admin.otpExpiry = undefined;
+  await admin.save();
+
+  res.status(200).json({
+    message: "Login successful",
+    role: admin.role, // e.g., "adminL1"
+    name: admin.employeeName // e.g., "Admin Name"
+  });
 });
 
 module.exports = router;

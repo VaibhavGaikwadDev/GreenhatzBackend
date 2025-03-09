@@ -1,6 +1,6 @@
+// ideaModel.js
 const mongoose = require("mongoose");
 
-// Idea Submission Schema
 const ideaSchema = new mongoose.Schema(
   {
     employeeName: String,
@@ -14,16 +14,14 @@ const ideaSchema = new mongoose.Schema(
     impactedProcess: String,
     expectedBenefitsValue: String,
     attachment: String,
-    status: { type: String, default: "Pending" }, // Default status
-    comment: { type: String, default: "" },
-    // message: { type: String, default: "" }, // Add message field
     submittedAt: { type: Date, default: Date.now },
-    bookmarkedBy: { type: [String], default: [] }, // Admins who bookmarked the idea
+    status: { type: String, default: "Pending" }, // e.g., "ApprovedByL1Admin"
+    adminName: { type: String }, // Add Admin name who accept or reject
+    comment: { type: String, default: "" },
+    bookmarkedBy: { type: [String], default: [] },
   },
   { collection: "idea_submissions" }
 );
 
 const Idea = mongoose.model("Idea", ideaSchema);
-// const RejectedIdea = mongoose.model("RejectedIdea", rejectedIdeaSchema);
-
 module.exports = { Idea };

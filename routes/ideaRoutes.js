@@ -1,7 +1,7 @@
 const express = require("express");
-const { Idea } = require("../models/ideaModel");
-
 const router = express.Router();
+const { Idea } = require("../models/ideaModel");
+const { Admin } = require("../models/userModel");
 
 // Middleware to validate MongoDB ObjectId
 const isValidObjectId = (id) => /^[a-f\d]{24}$/i.test(id);
@@ -28,34 +28,36 @@ router.get("/rejected-ideas", async (req, res) => {
 
 // Update idea status (Approve / Recommend to L2 / Reject)
 router.put("/update-status/:id", async (req, res) => {
-  const { id } = req.params;
-  const { status, comment } = req.body;
-
-  if (!isValidObjectId(id)) {
-    return res.status(400).json({ error: "Invalid Idea ID" });
-  }
-
   try {
-    const idea = await Idea.findById(id);
-    if (!idea) {
+    const { status, comment, adminId, adminRole, adminName } = req.body;
+
+    // Fetch admin name if not provided
+    let updatedAdminName = adminName;
+    if (!adminName && adminId) {
+      const admin = await Admin.findOne({ corporateId: adminId });
+      updatedAdminName = admin ? admin.employeeName : "Unknown Admin";
+    }
+
+    const formattedStatus = `${status}By${adminRole}`; // e.g., "ApprovedByL1Admin"
+
+    const updatedIdea = await Idea.findByIdAndUpdate(
+      req.params.id,
+      {
+        status: formattedStatus,
+        adminName: updatedAdminName, // Store name separately
+        comment,
+      },
+      { new: true }
+    );
+
+    if (!updatedIdea) {
       return res.status(404).json({ error: "Idea not found" });
     }
 
-    // ✅ Always update comment (even if empty)
-    idea.status = status || idea.status;
-    if (comment !== undefined) {
-      idea.comment = comment;
-    }
-
-    if (status.toLowerCase() === "rejected") {
-      idea.rejectedAt = new Date();
-    }
-
-    await idea.save();
-    res.json({ message: "Idea status updated successfully", idea });
+    res.status(200).json(updatedIdea);
   } catch (error) {
-    console.error("❌ Error updating idea status:", error);
-    res.status(500).json({ error: "Error updating status", details: error.message });
+    console.error("Error updating idea status:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 // Bookmark or Unbookmark Idea
